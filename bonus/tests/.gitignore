@@ -1,0 +1,25 @@
+# Виртуальное окружение Python
+.venv/
+venv/
+ENV/
+bin/
+lib/
+include/
+
+# Кэш Pytest и Python
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Логи и временные файлы Playwright
+.playwright/
+test-results/
+playwright-report/
+blob-report/
+
+# Переменные окружения и системные файлы
+.env
+.DS_Store
+Thumbs.db
