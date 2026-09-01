@@ -1,0 +1,351 @@
+{
+  "info": {
+    "_postman_id": "25105708-9893-4d29-a459-9bb465509856",
+    "name": "MISE — QA Shchavelev",
+    "description": "Тестовое решение на тестовое задание компании MISE",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50752979",
+    "_collection_link": "https://go.postman.co/collection/50752979-25105708-9893-4d29-a459-9bb465509856?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "TC-API-01: Успешное бронирование (Happy Path)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Статус-код должен быть 200 или 201', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "pm.test('Ответ содержит тело бронирования в формате JSON', function () {",
+              "    pm.response.to.be.withBody;",
+              "    pm.response.to.be.json;",
+              "});",
+              "",
+              "pm.test('Вложенный объект booking содержит все обязательные поля', function () {",
+              "    var jsonData = pm.response.json();",
+              "    ",
+              "    // Проверяем, что корень содержит объект booking",
+              "    pm.expect(jsonData).to.have.property('booking');",
+              "    ",
+              "    // Проверяем поля внутри объекта booking",
+              "    var booking = jsonData.booking;",
+              "    pm.expect(booking).to.have.property('id');",
+              "    pm.expect(booking).to.have.property('name');",
+              "    pm.expect(booking).to.have.property('phone');",
+              "    pm.expect(booking).to.have.property('date');",
+              "    pm.expect(booking).to.have.property('time');",
+              "    pm.expect(booking).to.have.property('guests');",
+              "    pm.expect(booking).to.have.property('createdAt');",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ил\",\n  \"phone\": \"89153933308\",\n  \"date\": \"2026-09-01\",\n  \"time\": \"12:00\",\n  \"guests\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-API-02: Позитивный edge case — дата на границе +90 дней",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Статус-код должен быть 200 или 201', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "pm.test('Бронь успешно создана на запрошенную максимальную дату', function () {",
+              "    var jsonData = pm.response.json();",
+              "    ",
+              "    // Получаем дату, которую мы сами отправили в запросе",
+              "    var requestBody = JSON.parse(pm.request.body.raw);",
+              "    var expectedDate = requestBody.date;",
+              "    ",
+              "    // Сверяем с тем, что сохранил бэкенд внутри объекта booking",
+              "    pm.expect(jsonData.booking.date).to.eql(expectedDate);",
+              "});",
+              "",
+              "pm.test('Вложенный объект booking содержит все обязательные поля', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('booking');",
+              "    ",
+              "    var booking = jsonData.booking;",
+              "    pm.expect(booking).to.have.property('id');",
+              "    pm.expect(booking).to.have.property('name');",
+              "    pm.expect(booking).to.have.property('phone');",
+              "    pm.expect(booking).to.have.property('date');",
+              "    pm.expect(booking).to.have.property('time');",
+              "    pm.expect(booking).to.have.property('guests');",
+              "    pm.expect(booking).to.have.property('createdAt');",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ilya Shchavelev - QA\",\n  \"phone\": \"+7 (915) 393-33-08\",\n  \"date\": \"2026-11-30\",\n  \"time\": \"22:00\",\n  \"guests\": 12\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-API-03: Негативный — Короткий телефон (Проверка BUG-04)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Бэкенд должен возвращать 400 Bad Request при невалидном телефоне', function () {",
+              "    // Тест упадет, так как сервер возвращает 200, фиксируя баг бэкенда",
+              "    pm.expect(pm.response.code).to.eql(400);",
+              "});",
+              "",
+              "pm.test('Ответ содержит сообщение об ошибке валидации', function () {",
+              "    var jsonData = pm.response.json();",
+              "    // Проверяем, что в ответе есть поле error или message, а не успешный объект booking",
+              "    pm.expect(jsonData).to.not.have.property('booking');",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Илья\",\n  \"phone\": \"8 915 393 33 0\",\n  \"date\": \"2026-09-10\",\n  \"time\": \"14:00\",\n  \"guests\": 4\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-API-04: Негативный — Дата в прошлом (Проверка BUG-05)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Бэкенд должен возвращать 400 Bad Request при дате в прошлом', function () {",
+              "    // Тест упадет со статусом Fail, так как сервер возвращает 200 OK (Фиксация BUG-API-02)",
+              "    pm.expect(pm.response.code).to.eql(400);",
+              "});",
+              "",
+              "pm.test('Ответ содержит сообщение об ошибке валидации даты', function () {",
+              "    var jsonData = pm.response.json();",
+              "    // Тест упадет, так как сервер возвращает объект booking вместо ошибки",
+              "    pm.expect(jsonData).to.not.have.property('booking');",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Илья\",\n  \"phone\": \"89153933308\",\n  \"date\": \"2026-08-30\",\n  \"time\": \"14:00\",\n  \"guests\": 4\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-API-05: Негативный — Не хватает обязательного поля name",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Бэкенд возвращает ошибку клиента при отсутствии обязательного поля name', function () {",
+              "    // Проверяем, что сервер вернул ошибку (400 Bad Request или 422 Unprocessable Entity)",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+              "});",
+              "",
+              "pm.test('Ответ содержит детализацию по отсутствующему полю name', function () {",
+              "    var jsonData = pm.response.json();",
+              "    var responseString = JSON.stringify(jsonData).toLowerCase();",
+              "    pm.expect(responseString).to.include('name');",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"+79991234567\",\n  \"date\": \"2026-09-10\",\n  \"time\": \"14:00\",\n  \"guests\": 4\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-API-06: Негативный — Превышение лимита гостей (13) (Проверка BUG-10)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Бэкенд должен возвращать 400 Bad Request при превышении лимита гостей', function () {",
+              "    // Тест упадет, если сервер пропустит 13 гостей и вернет 200 OK (Фиксация BUG-API-04)",
+              "    pm.expect(pm.response.code).to.eql(400);",
+              "});",
+              "",
+              "pm.test('Ответ содержит сообщение об ошибке валидации количества гостей', function () {",
+              "    var jsonData = pm.response.json();",
+              "    // Тест упадет, если сервер успешно создаст объект booking для 13 гостей",
+              "    pm.expect(jsonData).to.not.have.property('booking');",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Илья\",\n  \"phone\": \"89153933308\",\n  \"date\": \"2026-09-10\",\n  \"time\": \"14:00\",\n  \"guests\": 13\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://qa-booking-demo.vercel.app"
+    }
+  ]
+}
